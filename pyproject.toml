@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fraudshield"
+version = "0.1.0"
+description = "FraudShield+: AI-based anti-money laundering intelligence platform (graph analytics, ML, GNNs, RAG and agentic investigation)"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Ajazulla Khan G" }]
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.1",
+  "scipy>=1.11",
+  "scikit-learn>=1.4",
+  "networkx>=3.2",
+  "pydantic>=2.5",
+  "pyyaml>=6.0",
+  "joblib>=1.3",
+  "lightgbm>=4.1",
+  "requests>=2.31",
+]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.110", "uvicorn[standard]>=0.29"]
+vector = ["faiss-cpu>=1.8"]
+agents = ["langgraph>=0.2"]
+llm = ["requests>=2.31"]  # providers call the Ollama and Claude HTTP APIs directly
+dl = ["torch>=2.2", "torch-geometric>=2.5"]
+graphdb = ["neo4j>=5.14"]
+tracking = ["mlflow>=2.10"]
+docs = ["pypdf>=4.0"]
+dev = ["pytest>=8.0", "httpx>=0.27"]
+all = [
+  "fraudshield[api,vector,agents,llm,dl,graphdb,docs,dev]",
+]
+
+[project.scripts]
+fraudshield = "fraudshield.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+fraudshield = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+  "ignore::DeprecationWarning",
+  "ignore::FutureWarning",
+]

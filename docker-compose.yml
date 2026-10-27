@@ -1,0 +1,45 @@
+# docker compose up api                      -> API on http://localhost:8000 (trains on first start)
+# docker compose --profile graph up neo4j     -> Neo4j for Cypher queries (load with `fraudshield export-neo4j`)
+# docker compose --profile llm up ollama      -> local open LLM; then `docker compose exec ollama ollama pull qwen2.5:7b`
+
+services:
+  api:
+    build:
+      context: .
+      args:
+        WITH_DL: "${WITH_DL:-0}"
+    ports: ["8000:8000"]
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      FRAUDSHIELD_LLM_PROVIDER: ${FRAUDSHIELD_LLM_PROVIDER:-offline}
+      FRAUDSHIELD_LLM_BASE_URL: http://ollama:11434
+      FRAUDSHIELD_ALLOW_EXTERNAL_LLM: ${FRAUDSHIELD_ALLOW_EXTERNAL_LLM:-false}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      FRAUDSHIELD_AUTH_ENABLED: ${FRAUDSHIELD_AUTH_ENABLED:-false}
+      FRAUDSHIELD_API_KEYS: ${FRAUDSHIELD_API_KEYS:-}
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+
+  neo4j:
+    image: neo4j:5
+    profiles: ["graph"]
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?set NEO4J_PASSWORD in .env}
+    ports: ["7474:7474", "7687:7687"]
+    volumes:
+      - ./artifacts/neo4j:/import
+      - neo4j-data:/data
+
+  ollama:
+    image: ollama/ollama
+    profiles: ["llm"]
+    ports: ["11434:11434"]
+    volumes:
+      - ollama-models:/root/.ollama
+
+volumes:
+  neo4j-data:
+  ollama-models:
